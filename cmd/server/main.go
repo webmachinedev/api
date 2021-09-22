@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 
@@ -9,5 +10,7 @@ import (
 
 func main() {
 	http.HandleFunc("/", graphql.Handler)
-	http.ListenAndServe(":"+os.Getenv("PORT"), nil)
+	port := os.Getenv("PORT")
+	fmt.Println("listening on "+port)
+	http.ListenAndServe(":"+port, nil)
 }
