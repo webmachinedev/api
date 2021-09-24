@@ -1,0 +1,15 @@
+{
+    "id": "post",
+    "names": ["post"],
+    "tags": [],
+    "doc": "",
+    "inputs": [
+        {"name": "url", "type":"string"},
+        {"name": "headers", "type":"map[string]string"},
+        {"name": "body", "type":"interface{}"}
+    ],
+    "outputs": [
+        {"name":"value", "type":"interface{}"},
+        {"name":"err", "type":"error"}
+    ]
+}

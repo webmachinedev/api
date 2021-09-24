@@ -5,11 +5,12 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/webmachinedev/api/pkg/graphql"
+	"github.com/webmachinedev/api/pkg/serve"
 )
 
 func main() {
-	http.HandleFunc("/", graphql.Handler)
+	http.HandleFunc("/", serve.Dir("data"))
+	
 	port := os.Getenv("PORT")
 	fmt.Println("listening on "+port)
 	http.ListenAndServe(":"+port, nil)
