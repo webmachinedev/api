@@ -67,6 +67,17 @@ func main() {
 			id := strings.TrimPrefix(r.URL.Path, "/functions/")
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(functions[id])
+		case "POST":
+			id := strings.TrimPrefix(r.URL.Path, "/functions/")
+			var f models.Function
+    		err := json.NewDecoder(r.Body).Decode(&f)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+			} else {
+				functions[id] = f
+				w.Header().Set("Content-Type", "application/json")
+				json.NewEncoder(w).Encode(functions[id])
+			}
 		default:
 			w.WriteHeader(http.StatusBadRequest)
 		}
@@ -95,13 +106,9 @@ func main() {
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusBadRequest)
 			} else {
-				err = setType(id, t)
-				if err != nil {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-				} else {
-					w.Header().Set("Content-Type", "application/json")
-					json.NewEncoder(w).Encode(types[id])
-				}
+				types[id] = t
+				w.Header().Set("Content-Type", "application/json")
+				json.NewEncoder(w).Encode(types[id])
 			}
 		default:
 			w.WriteHeader(http.StatusBadRequest)

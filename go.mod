@@ -3,8 +3,8 @@ module github.com/webmachinedev/api
 go 1.17
 
 require (
-	github.com/webmachinedev/go-clients v0.0.0-20210922190134-5447f6552444
-	github.com/webmachinedev/models v0.0.0-20210923230040-87e47a5a07ab
+	github.com/webmachinedev/go-clients v0.0.0-20210924025647-f0e0da1d115f
+	github.com/webmachinedev/models v0.0.0-20210924022408-67b00358f20d
 )
 
 require (
