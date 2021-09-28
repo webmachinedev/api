@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"strings"
@@ -11,6 +12,7 @@ import (
 	"github.com/webmachinedev/models"
 )
 
+var rootIndex = []string{"types", "functions"}
 var functions = make(map[string]models.Function)
 var types = make(map[string]models.Type)
 
@@ -51,79 +53,13 @@ func init() {
 }
 
 func main() {
-	http.HandleFunc("/functions", func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case "GET":
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(functions)
-		default:
-			w.WriteHeader(http.StatusBadRequest)
-		}
-	})
-
-	http.HandleFunc("/functions/", func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case "GET":
-			id := strings.TrimPrefix(r.URL.Path, "/functions/")
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(functions[id])
-		case "POST":
-			id := strings.TrimPrefix(r.URL.Path, "/functions/")
-			var f models.Function
-    		err := json.NewDecoder(r.Body).Decode(&f)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusBadRequest)
-			} else {
-				functions[id] = f
-				w.Header().Set("Content-Type", "application/json")
-				json.NewEncoder(w).Encode(functions[id])
-			}
-		default:
-			w.WriteHeader(http.StatusBadRequest)
-		}
-	})
-
-	http.HandleFunc("/types", func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case "GET":
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(types)
-		default:
-			w.WriteHeader(http.StatusBadRequest)
-		}
-	})
-
-	http.HandleFunc("/types/", func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case "GET":
-			id := strings.TrimPrefix(r.URL.Path, "/types/")
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(types[id])
-		case "POST":
-			id := strings.TrimPrefix(r.URL.Path, "/types/")
-			var t models.Type
-    		err := json.NewDecoder(r.Body).Decode(&t)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusBadRequest)
-			} else {
-				types[id] = t
-				w.Header().Set("Content-Type", "application/json")
-				json.NewEncoder(w).Encode(types[id])
-			}
-		default:
-			w.WriteHeader(http.StatusBadRequest)
-		}
-	})
-
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
 		switch r.Method {
 		case "GET":
-			index := Index{
-				{"functions", "", "/functions"},
-				{"types", "", "/types"},
-			}
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(index)
+			HandleRead(w, r)
+		case "POST":
+			HandleWrite(w, r)
 		default:
 			w.WriteHeader(http.StatusBadRequest)
 		}
@@ -134,23 +70,162 @@ func main() {
 	http.ListenAndServe(":"+port, nil)
 }
 
-type Index []struct {
+type ListItem struct {
 	Name string `json:"name"`
 	Doc string `json:"doc"`
 	URL string `json:"url"`
 }
 
-func setType(id string, t models.Type) error {
-	owner := "webmachinedev"
-	repo := "api"
-	branch := "main"
-	filename := "data/types/"+string(t.ID)+".json"
-	bytes, err := json.Marshal(t)
+func HandleRead(w http.ResponseWriter, r *http.Request) {
+	resource := getResource(r)
+	id := getID(r)
+
+	switch resource {
+	case "":
+		WriteRootIndexResponse(w)
+	case "types":
+		if id == "" {
+			json.NewEncoder(w).Encode(types)
+		} else {
+			json.NewEncoder(w).Encode(types[id])
+		}
+	case "functions":
+		if id == "" {
+			json.NewEncoder(w).Encode(functions)
+		} else {
+			json.NewEncoder(w).Encode(functions[id])
+		}
+	default:
+		w.WriteHeader(http.StatusNotFound)
+	}
+}
+
+func WriteRootIndexResponse(w http.ResponseWriter) {
+	var index []ListItem
+	for _, resource := range rootIndex {
+		index = append(index, ListItem{resource, "", "/"+resource})
+	}
+	json.NewEncoder(w).Encode(index)
+}
+
+func HandleWrite(w http.ResponseWriter, r *http.Request) {
+	resource := getResource(r)
+	id := getID(r)
+
+	switch resource {
+	case "types":
+		bytes, err := io.ReadAll(r.Body)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+		} else {
+			var t models.Type
+			err = json.Unmarshal(bytes, &t)
+			if err != nil {
+				w.WriteHeader(http.StatusBadRequest)
+			} else {
+				if id != string(t.ID) {
+					w.WriteHeader(http.StatusBadRequest)
+				} else {
+					githubkey := r.Header.Get("githubkey")
+					err = WriteType(t, githubkey)
+					if err != nil {
+						w.WriteHeader(http.StatusInternalServerError)
+					} else {
+						w.WriteHeader(http.StatusOK)
+					}
+				}
+			}
+		}
+	case "functions":
+		bytes, err := io.ReadAll(r.Body)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+		} else {
+			var f models.Function
+			err = json.Unmarshal(bytes, &f)
+			if err != nil {
+				w.WriteHeader(http.StatusBadRequest)
+			} else {
+				if id != string(f.ID) {
+					w.WriteHeader(http.StatusBadRequest)
+				} else {
+					githubkey := r.Header.Get("githubkey")
+					err = WriteFunction(f, githubkey)
+					if err != nil {
+						w.WriteHeader(http.StatusInternalServerError)
+					} else {
+						w.WriteHeader(http.StatusOK)
+					}
+				}
+			}
+		}
+	default:
+		w.WriteHeader(http.StatusBadRequest)
+	}
+}
+
+func WriteType(t models.Type, githubkey string) error {
+	path := "data/types/"+string(t.ID)
+	bytes, err := json.MarshalIndent(t, "", "  ")
 	if err != nil {
 		return err
 	}
-	file := string(bytes)
-	commitmessage := "Update "+t.Name+" type"
-	githubkey := os.Getenv("GITHUB_TOKEN")
-	return github.WriteFile(owner, repo, branch, filename, file, commitmessage, githubkey)
+
+	err = github.WriteFile(
+		"webmachinedev",
+		"api",
+		"main",
+		path,
+		string(bytes),
+		"Update type "+string(t.ID),
+		githubkey,
+	)
+	if err != nil {
+		return err
+	}
+
+	types[string(t.ID)] = t
+	return nil
+}
+
+func WriteFunction(f models.Function, githubkey string) error {
+	path := "data/functions/"+string(f.ID)
+	bytes, err := json.MarshalIndent(f, "", "  ")
+	if err != nil {
+		return err
+	}
+
+	err = github.WriteFile(
+		"webmachinedev",
+		"api",
+		"main",
+		path,
+		string(bytes),
+		"Update type "+string(f.ID),
+		githubkey,
+	)
+	if err != nil {
+		return err
+	}
+
+	functions[string(f.ID)] = f
+	return nil
+}
+
+func getResource(r *http.Request) string {
+	path := strings.Split(r.URL.Path, "/")
+	if len(path) < 2 {
+		return ""
+	} else {
+		return path[1]
+	}
+}
+
+func getID(r *http.Request) string {
+	path := strings.Split(r.URL.Path, "/")
+	if len(path) < 3 {
+		return ""
+	} else {
+		return path[2]
+	}
 }

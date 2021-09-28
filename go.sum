@@ -113,10 +113,10 @@ github.com/prometheus/client_model v0.0.0-20190812154241-14fe0d1b01d4/go.mod h1:
 github.com/rogpeppe/go-internal v1.3.0/go.mod h1:M8bDsm7K2OlrFYOpmOWEs/qY81heoFRclV5y23lUDJ4=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.4.0/go.mod h1:j7eGeouHqKxXV5pUuKE4zz7dFj8WfuZ+81PSLYec5m4=
-github.com/webmachinedev/go-clients v0.0.0-20210924025647-f0e0da1d115f h1:6yuipsqG7mmatJQzy3v2Y5UszoQbBw4WNP2aS5KWjz0=
-github.com/webmachinedev/go-clients v0.0.0-20210924025647-f0e0da1d115f/go.mod h1:QvrifLGHJH6o9f9mnBph8y8dn7UViyr5CGnXHw0o3Uo=
-github.com/webmachinedev/models v0.0.0-20210924022408-67b00358f20d h1:m0DeyTN7hgra2JoTJIE/pt+uLaDc7fZnYKpQB8aqrcg=
-github.com/webmachinedev/models v0.0.0-20210924022408-67b00358f20d/go.mod h1:7RcCUN4zxN6xgEr2vLVUKNVPZscjwXwBriGf3FbD5o8=
+github.com/webmachinedev/go-clients v0.0.0-20210928191714-ae5c0a2e15e5 h1:n3N9hGFdlS2oDTN6iHXX8+lIc2rLWlhWHtg8vMbWGDA=
+github.com/webmachinedev/go-clients v0.0.0-20210928191714-ae5c0a2e15e5/go.mod h1:QvrifLGHJH6o9f9mnBph8y8dn7UViyr5CGnXHw0o3Uo=
+github.com/webmachinedev/models v0.0.0-20210924032126-aa586b0ca4aa h1:GemWtAUsjOh2b/DkF1VMkS4pu6AkL6BTUDRQK3CPnT4=
+github.com/webmachinedev/models v0.0.0-20210924032126-aa586b0ca4aa/go.mod h1:7RcCUN4zxN6xgEr2vLVUKNVPZscjwXwBriGf3FbD5o8=
 github.com/yuin/goldmark v1.1.25/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.32/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
