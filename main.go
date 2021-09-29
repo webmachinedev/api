@@ -4,12 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"strings"
 
 	"github.com/webmachinedev/go-clients/github"
 	"github.com/webmachinedev/models"
+	"golang.org/x/crypto/acme/autocert"
 )
 
 var rootIndex = []string{"types", "functions"}
@@ -53,7 +55,8 @@ func init() {
 }
 
 func main() {
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		switch r.Method {
 		case "GET":
@@ -64,10 +67,13 @@ func main() {
 			w.WriteHeader(http.StatusBadRequest)
 		}
 	})
-
-	port := os.Getenv("PORT")
-	fmt.Println("listening on "+port)
-	http.ListenAndServe(":"+port, nil)
+	
+	go func() {
+		fmt.Println("listening on 443")
+		log.Fatal(http.Serve(autocert.NewListener("api.webmachine.dev"), mux))
+	}()
+	fmt.Println("listening on 80")
+	http.ListenAndServe(":80", mux)
 }
 
 type ListItem struct {

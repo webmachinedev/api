@@ -1,9 +1,6 @@
 FROM alpine:latest
 
-RUN apk add git
 RUN apk add go
-
-ENV PORT 80
 
 COPY go.mod go.mod
 COPY go.sum go.sum
